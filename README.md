@@ -5,7 +5,12 @@
 * Written in C++ by using LAME MP3 Encoder library and POSIX threads
 * Each encoding process runs in a different thread to utilize multi-threading
 
-## Compilation Steps
+## Compilation
+At least cmake 3.5 should be installed in order to compile. Change your current directory to the project folder and run the following commands;
+
+* `cmake .`
+* `make`
+
 
 ## Usage
-MP3Encoder &lt;WAVCollectionFolder&gt;
+`MP3Encoder <WAVCollectionFolder>`

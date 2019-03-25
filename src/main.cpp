@@ -5,7 +5,6 @@
 
 
 //TODO Add --help section
-//TODO Fix cracking sound problem at the beginning
 
 
 int main(int argc, char* args[])

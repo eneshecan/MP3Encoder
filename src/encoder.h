@@ -20,6 +20,8 @@ struct wav_header_t
     uint32_t       byte_rate_;
     uint16_t       block_align_;
     uint16_t       bits_per_sample_;
+    char           subchunk2_id_[4];
+    uint32_t       subchunk2_size_;
 };
 
 

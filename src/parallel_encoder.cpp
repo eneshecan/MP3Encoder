@@ -2,6 +2,11 @@
 #include "encoder.h"
 #include <iostream>
 
+#ifdef _WIN32
+#define HAVE_STRUCT_TIMESPEC
+#include "pthread.h"
+#endif
+
 pthread_mutex_t mutex_;
 
 parallel_encoder::parallel_encoder()

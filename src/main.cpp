@@ -1,4 +1,9 @@
+#ifdef _WIN32
+#include "dirent_win.h"
+#else
 #include <dirent.h>
+#endif
+
 #include <iostream>
 #include <sstream>
 #include "parallel_encoder.h"

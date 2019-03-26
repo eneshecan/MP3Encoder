@@ -4,24 +4,32 @@
 #include <string>
 #include <memory>
 
-//TODO Create enum class to represent error codes from init and encode functions
+
+enum class encoder_status
+{
+    status_ok,
+    invalid_format,
+    open_file_error,
+    initialization_failed,
+    encode_buffer_error
+};
 
 
 struct wav_header_t
 {
-    char           chunk_id_[4];
-    uint32_t       chunk_size_;
-    char           format_[4];
-    char           subchunk1_id_[4];
-    uint32_t       subchunk1_size_;
-    uint16_t       audio_format_;
-    uint16_t       num_channels_;
-    uint32_t       sample_rate_;
-    uint32_t       byte_rate_;
-    uint16_t       block_align_;
-    uint16_t       bits_per_sample_;
-    char           subchunk2_id_[4];
-    uint32_t       subchunk2_size_;
+    char     chunk_id_[4];
+    uint32_t chunk_size_;
+    char     format_[4];
+    char     subchunk1_id_[4];
+    uint32_t subchunk1_size_;
+    uint16_t audio_format_;
+    uint16_t num_channels_;
+    uint32_t sample_rate_;
+    uint32_t byte_rate_;
+    uint16_t block_align_;
+    uint16_t bits_per_sample_;
+    char     subchunk2_id_[4];
+    uint32_t subchunk2_size_;
 };
 
 
@@ -32,8 +40,8 @@ public:
     ~encoder();
 
 public:
-    int init(std::string wav_file_path);
-    bool encode();
+    encoder_status init(std::string wav_file_path);
+    encoder_status encode();
 
 private:
     lame_global_flags*             lame_flags_;

@@ -1,5 +1,6 @@
 #include "encoder.h"
 
+
 encoder::encoder() :
     lame_flags_(nullptr),
     wav_header_({}),
@@ -14,11 +15,11 @@ encoder::~encoder()
     }
 }
 
-int encoder::init(std::string wav_file_path)
+encoder_status encoder::init(std::string wav_file_path)
 {
     if(wav_file_path.substr(wav_file_path.find_last_of('.') + 1) != "wav")
     {
-        return -1;
+        return encoder_status::invalid_format;
     }
 
     wav_file_path_ = wav_file_path;
@@ -26,7 +27,7 @@ int encoder::init(std::string wav_file_path)
     FILE* wav_file = fopen(wav_file_path_.c_str(), "rb");
     if(!wav_file)
     {
-        return -2;
+        return encoder_status::open_file_error;
     }
 
     fread(&wav_header_, sizeof(wav_header_t), 1, wav_file);
@@ -37,7 +38,7 @@ int encoder::init(std::string wav_file_path)
 
     if(!lame_flags_)
     {
-        return -3;
+        return encoder_status::initialization_failed;
     }
 
     lame_set_num_channels(lame_flags_, wav_header_.num_channels_);
@@ -47,28 +48,28 @@ int encoder::init(std::string wav_file_path)
 
     if(lame_init_params(lame_flags_) == -1)
     {
-        return -4;
+        return encoder_status::initialization_failed;
     }
 
     wav_buffer_.reset(new short[chunk_size_ * wav_header_.num_channels_]);
     mp3_buffer_.reset(new unsigned char[chunk_size_ * wav_header_.num_channels_]);
 
-    return 0;
+    return encoder_status::status_ok;
 }
 
-bool encoder::encode()
+encoder_status encoder::encode()
 {
     FILE* wav_file = fopen(wav_file_path_.c_str(), "rb");
     if(!wav_file)
     {
-        return false;
+        return encoder_status::open_file_error;
     }
 
     std::string mp3_file_path = wav_file_path_.replace(wav_file_path_.find_last_of(".") + 1, 3, "mp3");
     FILE* mp3_file = fopen(mp3_file_path.c_str(), "wb");
     if(!mp3_file)
     {
-        return false;
+        return encoder_status::open_file_error;
     }
 
     fread(&wav_header_, sizeof(wav_header_t), 1, wav_file);
@@ -96,9 +97,11 @@ bool encoder::encode()
             bytes_wrote = lame_encode_flush(lame_flags_, mp3_buffer_.get(), chunk_size_);
         }
 
-        if( bytes_wrote < 0 )
+        if(bytes_wrote < 0)
         {
-            return false;
+            fclose(wav_file);
+            fclose(mp3_file);
+            return encoder_status::encode_buffer_error;
         }
 
         fwrite(mp3_buffer_.get(), bytes_wrote, 1, mp3_file);
@@ -108,5 +111,5 @@ bool encoder::encode()
     fclose(wav_file);
     fclose(mp3_file);
 
-    return true;
+    return encoder_status::status_ok;
 }

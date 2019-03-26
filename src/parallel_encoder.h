@@ -11,6 +11,6 @@ public:
     ~parallel_encoder();
 
 public:
-    void run(std::vector<std::string> file_paths);
+    void         run(std::vector<std::string> file_paths);
     static void* encode(void* file_path);
 };

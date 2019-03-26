@@ -1,13 +1,13 @@
 #include "parallel_encoder.h"
-#include "encoder.h"
-#include <iostream>
-
 #ifdef _WIN32
 #define HAVE_STRUCT_TIMESPEC
 #include "pthread.h"
 #endif
+#include "encoder.h"
+#include <iostream>
 
-pthread_mutex_t mutex_;
+
+pthread_mutex_t pthread_mutex;
 
 parallel_encoder::parallel_encoder()
 {}
@@ -20,7 +20,7 @@ void parallel_encoder::run(std::vector<std::string> file_paths)
     auto num_threads = file_paths.size();
     std::vector<pthread_t> threads(num_threads);
 
-    mutex_ = PTHREAD_MUTEX_INITIALIZER;
+    pthread_mutex = PTHREAD_MUTEX_INITIALIZER;
 
     for(size_t i = 0; i < num_threads; i++)
     {
@@ -43,22 +43,22 @@ void* parallel_encoder::encode(void *file_path) {
     encoder encoder;
     auto init_result = encoder.init(wav_file_path);
 
-    if(init_result == -1)
+    if(init_result == encoder_status::invalid_format)
     {
         return nullptr;
     }
 
-    if(init_result != 0)
+    if(init_result != encoder_status::status_ok)
     {
         std::cout << "Couldn't initialize encoder for " << wav_file_path << std::endl;
         return nullptr;
     }
 
-    pthread_mutex_lock(&mutex_);
+    pthread_mutex_lock(&pthread_mutex);
     std::cout << "Encoding " << wav_file_path << std::endl;
-    pthread_mutex_unlock(&mutex_);
+    pthread_mutex_unlock(&pthread_mutex);
 
-    if(!encoder.encode())
+    if(encoder.encode() != encoder_status::status_ok)
     {
         std::cout << "Couldn't encode" << wav_file_path << std::endl;
     }

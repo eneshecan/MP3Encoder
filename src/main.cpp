@@ -1,22 +1,15 @@
 #ifdef _WIN32
-#include "dirent_win.h"
+#include "dirent.h"
 #else
 #include <dirent.h>
 #endif
-
 #include <iostream>
 #include <sstream>
 #include "parallel_encoder.h"
 
 
-//TODO Add --help section
-
-
 int main(int argc, char* args[])
 {
-    struct dirent *p_dirent = nullptr;
-    DIR *p_dir;
-
     if (argc < 2) {
         std::cout << "Usage: MP3Encoder <directory name>" << std::endl;
         return 1;
@@ -24,17 +17,20 @@ int main(int argc, char* args[])
 
     std::string dir_name(args[1]);
 
-    p_dir = opendir(dir_name.c_str());
-    if (!p_dir) {
-        std::cout << "Cannot open directory " << args[1] << std::endl;
+    struct dirent *dirent = nullptr;
+    DIR *dir = nullptr;
+
+    dir = opendir(dir_name.c_str());
+    if (!dir) {
+        std::cout << "Couldn't open directory " << args[1] << std::endl;
         return 1;
     }
 
     std::vector<std::string> paths;
 
-    while ((p_dirent = readdir(p_dir)) != nullptr)
+    while ((dirent = readdir(dir)) != nullptr)
     {
-        std::string name(p_dirent->d_name);
+        std::string name(dirent->d_name);
         if((name == ".") || (name == ".."))
         {
             continue;
@@ -45,11 +41,11 @@ int main(int argc, char* args[])
 
         paths.push_back(path.str());
     }
-    closedir (p_dir);
+    closedir(dir);
 
 
-    parallel_encoder batch_encoder;
-    batch_encoder.run(paths);
+    parallel_encoder parallel_encoder;
+    parallel_encoder.run(paths);
 
     return 0;
 }

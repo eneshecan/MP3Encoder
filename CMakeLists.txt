@@ -1,22 +1,10 @@
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-
 cmake_minimum_required(VERSION 3.5)
 project(MP3Encoder)
 
-if (WIN32)
-    include_directories(libs/lame-3.100/include/ libs/pthread/include libs/dirent)
-    link_directories(libs/lame-3.100/lib libs/pthread/lib/x86)
-endif (WIN32)
-if (UNIX)
-    include_directories(libs/lame-3.100/include/)
-    link_directories(libs/lame-3.100/lib)
-endif (UNIX)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(MP3Encoder src/main.cpp src/encoder.cpp src/encoder.h src/parallel_encoder.cpp src/parallel_encoder.h)
+add_executable(MP3Encoder src/main.cpp src/Encoder.cpp src/Encoder.hpp src/ParallelEncoder.cpp src/ParallelEncoder.hpp)
+target_link_libraries(MP3Encoder mp3lame pthread)
 
-if (WIN32)
-    target_link_libraries(MP3Encoder libmp3lame-static.lib pthreadVC2.lib)
-endif (WIN32)
-if (UNIX)
-    target_link_libraries(MP3Encoder libmp3lame.a -lpthread)
-endif (UNIX)
+# TODO Build and run on windows :/

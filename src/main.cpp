@@ -1,51 +1,44 @@
-#ifdef _WIN32
-#include "dirent.h"
-#else
 #include <dirent.h>
-#endif
 #include <iostream>
 #include <sstream>
-#include "parallel_encoder.h"
+#include "ParallelEncoder.hpp"
 
 
-int main(int argc, char* args[])
+int main(int argc, char** args)
 {
-    if (argc < 2) {
-        std::cout << "Usage: MP3Encoder <directory name>" << std::endl;
-        return 1;
-    }
-
-    std::string dir_name(args[1]);
-
-    struct dirent *dirent = nullptr;
-    DIR *dir = nullptr;
-
-    dir = opendir(dir_name.c_str());
-    if (!dir) {
-        std::cout << "Couldn't open directory " << args[1] << std::endl;
-        return 1;
-    }
-
-    std::vector<std::string> paths;
-
-    while ((dirent = readdir(dir)) != nullptr)
+    if (argc < 2)
     {
-        std::string name(dirent->d_name);
-        if((name == ".") || (name == ".."))
+        std::cerr << "Usage: MP3Encoder <directory name>" << std::endl;
+        return 1;
+    }
+
+    auto const dirName = args[1];
+    auto const dir = opendir(dirName);
+    if (!dir)
+    {
+        std::cerr << "Failed to open directory " << dirName << std::endl;
+        return 1;
+    }
+
+    auto paths = std::vector<std::string>{};
+
+    for (dirent* dirent = nullptr; (dirent = readdir(dir)) != nullptr;)
+    {
+        auto const name = std::string{dirent->d_name};
+        if ((name == ".") || (name == ".."))
         {
             continue;
         }
 
-        std::stringstream path;
-        path << dir_name << "/" << name;
+        auto path = std::stringstream{};
+        path << dirName << "/" << name;
 
         paths.push_back(path.str());
     }
+
     closedir(dir);
 
-
-    parallel_encoder parallel_encoder;
-    parallel_encoder.run(paths);
+    mp3_encoder::parallel_encoder::run(paths);
 
     return 0;
 }
